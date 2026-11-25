@@ -52,8 +52,9 @@ public class MainActivity extends Activity {
         web = new WebView(this);
         root.addView(web, new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+        if (!"tv".equals(FORM) && Build.VERSION.SDK_INT >= 30) getWindow().setDecorFitsSystemWindows(false);
         setContentView(root);
-        if (!"tv".equals(FORM)) fitSystemBars(web);
+        if (!"tv".equals(FORM)) fitSystemBars(root);
         WebSettings settings = web.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
@@ -71,11 +72,14 @@ public class MainActivity extends Activity {
         web.loadUrl("https://appassets.androidplatform.net/assets/index.html");
     }
 
-    private void fitSystemBars(final View view) {
-        if (Build.VERSION.SDK_INT >= 30) getWindow().setDecorFitsSystemWindows(false);
+    private void fitSystemBars(final View root) {
         getWindow().setStatusBarColor(Color.rgb(14, 28, 51));
         getWindow().setNavigationBarColor(Color.rgb(14, 28, 51));
-        view.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
+        if (Build.VERSION.SDK_INT >= 29) {
+            getWindow().setStatusBarContrastEnforced(false);
+            getWindow().setNavigationBarContrastEnforced(false);
+        }
+        root.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
             @Override
             public WindowInsets onApplyWindowInsets(View v, WindowInsets insets) {
                 int top;
@@ -83,7 +87,8 @@ public class MainActivity extends Activity {
                 int left;
                 int right;
                 if (Build.VERSION.SDK_INT >= 30) {
-                    android.graphics.Insets bars = insets.getInsets(WindowInsets.Type.systemBars());
+                    android.graphics.Insets bars = insets.getInsets(
+                            WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
                     top = bars.top;
                     bottom = bars.bottom;
                     left = bars.left;
@@ -95,10 +100,15 @@ public class MainActivity extends Activity {
                     right = insets.getSystemWindowInsetRight();
                 }
                 v.setPadding(left, top, right, bottom);
-                return insets;
+                return Build.VERSION.SDK_INT >= 30 ? WindowInsets.CONSUMED : insets.consumeSystemWindowInsets();
             }
         });
-        view.requestApplyInsets();
+        root.post(new Runnable() {
+            @Override
+            public void run() {
+                root.requestApplyInsets();
+            }
+        });
     }
 
     @Override

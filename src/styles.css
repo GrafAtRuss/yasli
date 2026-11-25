@@ -359,7 +359,7 @@ html[data-form="tv"] .play-screen .dock {
   .home-panel {
     max-width: none;
     display: grid;
-    grid-template-columns: minmax(0, 1.25fr) minmax(15rem, 0.75fr);
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 16rem);
     grid-template-rows: auto auto auto auto;
     align-content: center;
     column-gap: 1.5rem;
@@ -376,6 +376,7 @@ html[data-form="tv"] .play-screen .dock {
     grid-column: 2;
     grid-row: 1 / span 4;
     align-self: center;
+    min-width: 0;
     gap: 0.4rem;
   }
 

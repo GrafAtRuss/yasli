@@ -1,4 +1,4 @@
-# Ясли 1.1.4
+# Ясли 1.1.5
 
 Семейная игра о католическом Рождестве. Один телефон на всех: ребёнку — короткий вопрос, взрослому — вопрос по Евангелию и катехизису. История идёт от Благовещения к яслям и Богоявлению.
 
@@ -16,10 +16,10 @@
 
 | Файл | Куда | Пакет |
 | --- | --- | --- |
-| [Yasli-Phone-1.1.4.apk](https://github.com/GrafAtRuss/yasli/releases/download/v1.1.4/Yasli-Phone-1.1.4.apk) | Телефон и планшет | `ru.yasli.phone` |
-| [Yasli-TV-1.1.4.apk](https://github.com/GrafAtRuss/yasli/releases/download/v1.1.4/Yasli-TV-1.1.4.apk) | Android TV, YaOS и YaOS X | `ru.yasli.tv` |
+| [Yasli-Phone-1.1.5.apk](https://github.com/GrafAtRuss/yasli/releases/download/v1.1.5/Yasli-Phone-1.1.5.apk) | Телефон и планшет | `ru.yasli.phone` |
+| [Yasli-TV-1.1.5.apk](https://github.com/GrafAtRuss/yasli/releases/download/v1.1.5/Yasli-TV-1.1.5.apk) | Android TV, YaOS и YaOS X | `ru.yasli.tv` |
 
-Оба пакета — версия 1.1.4, код 114, minSdk 24, targetSdk 35. Разрешения ставить обновления самому нет: новую версию ставит RuStore или магазин YaOS. Интернета у приложения нет.
+Оба пакета — версия 1.1.5, код 115, minSdk 24, targetSdk 35. Разрешения ставить обновления самому нет: новую версию ставит RuStore или магазин YaOS. Интернета у приложения нет.
 
 На телевизоре стрелки пульта переходят к соседней кнопке, OK выбирает, «Назад» возвращает на предыдущий экран и с главного закрывает игру. Алиса нажимает кнопку по её словам: «Семейный путь», «Играть одному», «Как играть». Имя у поля можно сказать кнопкой «Сказать имя».
 

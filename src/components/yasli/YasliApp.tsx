@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, BookOpen, Mic, Plus, Star, Users, Volume2, VolumeX, X } from "lucide-react";
-import { playTone, unlockAudio } from "@/game/audio";
+import { playTone, syncMusic, unlockAudio } from "@/game/audio";
 import {
   GOSPEL,
   PRAYER,
@@ -97,6 +97,16 @@ export function YasliApp() {
   }, []);
 
   useEffect(() => {
+    const start = () => syncMusic(save.muted);
+    window.addEventListener("pointerdown", start);
+    window.addEventListener("keydown", start);
+    return () => {
+      window.removeEventListener("pointerdown", start);
+      window.removeEventListener("keydown", start);
+    };
+  }, [save.muted]);
+
+  useEffect(() => {
     return installRemote(
       (voice) => applyVoice(voice),
       () => actions.current.back(),
@@ -123,8 +133,9 @@ export function YasliApp() {
   }
 
   function toggleMute() {
-    unlockAudio();
-    persist({ ...save, muted: !save.muted });
+    const muted = !save.muted;
+    persist({ ...save, muted });
+    syncMusic(muted);
   }
 
   function begin(players: Player[], path: Length) {
