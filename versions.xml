@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Каталог «Ясли».
+  https://raw.githubusercontent.com/GrafAtRuss/yasli/main/versions.xml
+-->
+<catalog>
+  <updated>2026-11-25T11:00:00Z</updated>
+  <applications>
+    <application id="yasli">
+      <name>Ясли</name>
+      <version>1.0.0</version>
+      <description>Семейная игра о католическом Рождестве. Дети и взрослые идут к яслям на одном телефоне.</description>
+      <icon>https://raw.githubusercontent.com/GrafAtRuss/yasli/main/public/favicon.svg</icon>
+      <download>https://github.com/GrafAtRuss/yasli</download>
+      <file>yasli</file>
+    </application>
+  </applications>
+</catalog>
