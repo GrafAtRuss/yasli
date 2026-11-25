@@ -11,32 +11,9 @@ CODE=$(sed -n 's/.*APP_VERSION_CODE = \([0-9]*\).*/\1/p' "$ROOT/src/game/version
 OUT="$ROOT/dist"
 mkdir -p "$OUT" "$ROOT/android/phone/res/drawable" "$ROOT/android/tv/res/drawable" "$ROOT/store"
 
-python3 - << 'PY'
-from PIL import Image, ImageDraw
-def star(draw, cx, cy, r, fill):
-    pts = []
-    for i in range(10):
-        ang = -3.14159 / 2 + i * 3.14159 / 5
-        rad = r if i % 2 == 0 else r * 0.42
-        pts.append((cx + rad * __import__("math").cos(ang), cy + rad * __import__("math").sin(ang)))
-    draw.polygon(pts, fill=fill)
-def icon(size, path):
-    img = Image.new("RGB", (size, size), "#0e1c33")
-    draw = ImageDraw.Draw(img)
-    pad = int(size * 0.08)
-    draw.rounded_rectangle((pad, pad, size - pad, size - pad), radius=int(size * 0.18), fill="#173055")
-    star(draw, size * 0.5, size * 0.46, size * 0.22, "#d4b06a")
-    img.save(path, "PNG")
-icon(192, "/workspace/android/phone/res/drawable/ic_launcher.png")
-icon(192, "/workspace/android/tv/res/drawable/ic_launcher.png")
-icon(512, "/workspace/store/icon-512.png")
-banner = Image.new("RGB", (320, 180), "#0e1c33")
-b = ImageDraw.Draw(banner)
-b.rectangle((0, 150, 320, 180), fill="#d4b06a")
-star(b, 64, 78, 28, "#d4b06a")
-banner.save("/workspace/android/tv/res/drawable/tv_banner.png", "PNG")
-banner.save("/workspace/store/tv-banner.png", "PNG")
-PY
+cp "$ROOT/store/android/ic_launcher.png" "$ROOT/android/phone/res/drawable/ic_launcher.png"
+cp "$ROOT/store/android/ic_launcher.png" "$ROOT/android/tv/res/drawable/ic_launcher.png"
+cp "$ROOT/store/android/tv_banner.png" "$ROOT/android/tv/res/drawable/tv_banner.png"
 
 if [ ! -f "$ROOT/android/yasli.keystore" ]; then
   keytool -genkeypair -keystore "$ROOT/android/yasli.keystore" -alias yasli \
