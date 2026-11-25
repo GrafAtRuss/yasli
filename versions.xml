@@ -4,7 +4,7 @@
   https://raw.githubusercontent.com/GrafAtRuss/yasli/main/versions.xml
 -->
 <catalog>
-  <updated>2026-11-25T21:10:00Z</updated>
+  <updated>2026-11-25T21:16:00Z</updated>
   <agreements>
     <agreement id="terms">
       <name>Пользовательское соглашение</name>
@@ -34,11 +34,11 @@
     </application>
     <application id="merge">
       <name>Ясли · Слияние</name>
-      <version>2.0.7</version>
-      <description>Заставка без пустоты, поле заполнено парами, сундуки отдельны от фигурок. Ставится поверх 2.0.6.</description>
+      <version>2.0.8</version>
+      <description>Доска как в образце: крупные предметы, молния на сундуках, подпрыгивание пар, вспышка при появлении. Ставится поверх 2.0.7.</description>
       <icon>https://raw.githubusercontent.com/GrafAtRuss/yasli/main/store/icon-512.png</icon>
-      <download>https://github.com/GrafAtRuss/yasli/releases/download/v2.0.7/Yasli-Merge-2.0.7.apk</download>
-      <file>Yasli-Merge-2.0.7.apk</file>
+      <download>https://github.com/GrafAtRuss/yasli/releases/download/v2.0.8/Yasli-Merge-2.0.8.apk</download>
+      <file>Yasli-Merge-2.0.8.apk</file>
     </application>
   </applications>
 </catalog>
