@@ -532,52 +532,54 @@ function Setup({
           <LengthButton active={length === "short"} title="Короткий" note="6 стоянок" onClick={() => onLength("short")} />
           <LengthButton active={length === "evening"} title="Вечерний" note="12 стоянок" onClick={() => onLength("evening")} />
         </div>
-        <ul className="player-list flex flex-col gap-3">
-          {draft.map((player, index) => (
-            <li key={player.id} className="player-card rounded-card bg-night-2 p-3">
-              <div className="mb-2 flex items-center justify-between">
-                <span className="kicker">Игрок {index + 1}</span>
-                {draft.length > 1 ? (
-                  <button
-                    className="icon-btn"
-                    aria-label={`Убрать игрока ${player.name}`}
-                    onClick={() => onChange(draft.filter((item) => item.id !== player.id))}
-                  >
-                    <X className="size-4" />
-                  </button>
-                ) : null}
-              </div>
-              <NameField
-                playerId={player.id}
-                label={`Имя игрока ${index + 1}`}
-                value={player.name}
-                onValue={(name) => patch(player.id, { name })}
-              />
-              <div className="mt-2 grid grid-cols-2 gap-2">
-                <RoleButton
-                  active={player.role === "child"}
-                  label="Ребёнок"
-                  onClick={() => patch(player.id, { role: "child" })}
+        <div className="setup-people flex min-h-0 flex-1 flex-col gap-3">
+          <ul className="player-list flex flex-col gap-3">
+            {draft.map((player, index) => (
+              <li key={player.id} className="player-card rounded-card bg-night-2 p-3">
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="kicker">Игрок {index + 1}</span>
+                  {draft.length > 1 ? (
+                    <button
+                      className="icon-btn"
+                      aria-label={`Убрать игрока ${player.name}`}
+                      onClick={() => onChange(draft.filter((item) => item.id !== player.id))}
+                    >
+                      <X className="size-4" />
+                    </button>
+                  ) : null}
+                </div>
+                <NameField
+                  playerId={player.id}
+                  label={`Имя игрока ${index + 1}`}
+                  value={player.name}
+                  onValue={(name) => patch(player.id, { name })}
                 />
-                <RoleButton
-                  active={player.role === "adult"}
-                  label="Взрослый"
-                  onClick={() => patch(player.id, { role: "adult" })}
-                />
-              </div>
-            </li>
-          ))}
-        </ul>
-        {nameError ? <p className="setup-error text-sm text-gold">Каждому нужно имя — хотя бы короткое.</p> : null}
-        {draft.length < 4 ? (
-          <button
-            className="setup-add btn btn-line"
-            onClick={() => onChange([...draft, newPlayer(draft.length % 2 === 0 ? "child" : "adult", "")])}
-          >
-            <Plus className="size-4" aria-hidden="true" />
-            Ещё человек
-          </button>
-        ) : null}
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  <RoleButton
+                    active={player.role === "child"}
+                    label="Ребёнок"
+                    onClick={() => patch(player.id, { role: "child" })}
+                  />
+                  <RoleButton
+                    active={player.role === "adult"}
+                    label="Взрослый"
+                    onClick={() => patch(player.id, { role: "adult" })}
+                  />
+                </div>
+              </li>
+            ))}
+          </ul>
+          {nameError ? <p className="setup-error text-sm text-gold">Каждому нужно имя — хотя бы короткое.</p> : null}
+          {draft.length < 4 ? (
+            <button
+              className="setup-add btn btn-line"
+              onClick={() => onChange([...draft, newPlayer(draft.length % 2 === 0 ? "child" : "adult", "")])}
+            >
+              <Plus className="size-4" aria-hidden="true" />
+              Ещё человек
+            </button>
+          ) : null}
+        </div>
       </div>
       <div className="dock safe-x safe-b">
         <button className="btn btn-gold" onClick={onStart}>

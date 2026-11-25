@@ -196,51 +196,86 @@ html[data-form="tv"] .field {
   padding: 0.45rem 0.7rem;
 }
 
-html[data-form="tv"] .setup-screen,
 html[data-form="tv"] .play-screen {
   height: 100dvh;
   max-width: none;
 }
 
+html[data-form="tv"] .setup-screen {
+  height: 100dvh;
+  max-width: 34rem;
+  margin-inline: auto;
+}
+
 html[data-form="tv"] .setup-body {
-  display: grid;
-  grid-template-columns: minmax(14rem, 0.72fr) minmax(0, 1.28fr);
-  grid-template-rows: auto auto auto;
-  align-content: center;
-  column-gap: 1.25rem;
-  row-gap: 0.65rem;
   overflow: hidden;
+  gap: 0.4rem;
+  padding-top: 0.35rem;
+  padding-bottom: 0.35rem;
 }
 
 html[data-form="tv"] .setup-note {
-  grid-column: 1;
-  grid-row: 1;
+  font-size: 0.85rem;
+  line-height: 1.25;
 }
 
-html[data-form="tv"] .setup-lengths {
-  grid-column: 1;
-  grid-row: 2;
-  align-self: start;
+html[data-form="tv"] .setup-screen .icon-btn {
+  height: 2.4rem;
+  width: 2.4rem;
+}
+
+html[data-form="tv"] .player-card .mb-2 {
+  margin-bottom: 0.25rem;
+}
+
+html[data-form="tv"] .player-card .mt-2 {
+  margin-top: 0.3rem;
+}
+
+html[data-form="tv"] .player-card .btn {
+  min-height: 2.05rem;
+  padding: 0.2rem 0.6rem;
+}
+
+html[data-form="tv"] .setup-people {
+  overflow-y: auto;
 }
 
 html[data-form="tv"] .player-list {
-  grid-column: 2;
-  grid-row: 1 / span 3;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  align-content: center;
-  gap: 0.65rem;
-  min-height: 0;
-  overflow: auto;
-}
-
-html[data-form="tv"] .setup-add,
-html[data-form="tv"] .setup-error {
-  grid-column: 1;
+  flex: none;
+  gap: 0.55rem;
 }
 
 html[data-form="tv"] .player-card {
-  padding: 0.65rem;
+  padding: 0.25rem 0.65rem 0.35rem;
+}
+
+html[data-form="tv"] .setup-screen .field {
+  padding: 0.28rem 0.65rem;
+}
+
+html[data-form="tv"] .player-card .btn,
+html[data-form="tv"] .setup-add {
+  min-height: 1.9rem;
+  padding: 0.15rem 0.6rem;
+}
+
+html[data-form="tv"] .player-list,
+html[data-form="tv"] .setup-people {
+  gap: 0.35rem;
+}
+
+html[data-form="tv"] .setup-screen .dock {
+  padding-top: 0.4rem;
+}
+
+html[data-form="tv"] .setup-screen h1 {
+  font-size: 1.85rem;
+}
+
+html[data-form="tv"] .setup-lengths button {
+  padding-top: 0.45rem;
+  padding-bottom: 0.45rem;
 }
 
 html[data-form="tv"] .play-screen {
