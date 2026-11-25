@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { ArrowLeft, BookOpen, Plus, Star, Users, Volume2, VolumeX, X } from "lucide-react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { ArrowLeft, BookOpen, Mic, Plus, Star, Users, Volume2, VolumeX, X } from "lucide-react";
 import { playTone, unlockAudio } from "@/game/audio";
 import {
   GOSPEL,
@@ -13,6 +13,8 @@ import {
   type Station,
 } from "@/game/content";
 import { emptySave, loadSave, writeSave, type Save } from "@/game/storage";
+import { media } from "@/game/media";
+import { canListen, exitApp, installRemote, listenForName, pressLabeled, type Voice } from "@/game/remote";
 import { APP_AUTHOR, APP_EMAIL, APP_NAME, APP_VERSION } from "@/game/version";
 
 type Screen = "home" | "how" | "setup" | "handoff" | "play" | "done";
@@ -75,10 +77,45 @@ export function YasliApp() {
   const [save, setSave] = useState<Save>(emptySave);
   const [confirmLeave, setConfirmLeave] = useState(false);
   const [nameError, setNameError] = useState(false);
+  const screenRef = useRef(screen);
+  const confirmRef = useRef(confirmLeave);
+  screenRef.current = screen;
+  confirmRef.current = confirmLeave;
+
+  const actions = useRef({
+    openFamily: () => undefined as void,
+    openSolo: () => undefined as void,
+    how: () => undefined as void,
+    home: () => undefined as void,
+    back: () => undefined as void,
+    length: (_length: Length) => undefined as void,
+    name: (_name: string) => undefined as void,
+  });
 
   useEffect(() => {
     setSave(loadSave());
   }, []);
+
+  useEffect(() => {
+    return installRemote(
+      (voice) => applyVoice(voice),
+      () => actions.current.back(),
+    );
+  }, []);
+
+  function applyVoice(voice: Voice) {
+    if (voice.kind === "family") actions.current.openFamily();
+    else if (voice.kind === "solo") actions.current.openSolo();
+    else if (voice.kind === "how") actions.current.how();
+    else if (voice.kind === "home") actions.current.home();
+    else if (voice.kind === "back") actions.current.back();
+    else if (voice.kind === "short") actions.current.length("short");
+    else if (voice.kind === "evening") actions.current.length("evening");
+    else if (voice.kind === "next") pressLabeled(/дальше|к яслям|я готов|смотрим вместе|выйти в путь|пройти ещё раз/i);
+    else if (voice.kind === "name" && voice.name) {
+      window.dispatchEvent(new CustomEvent("yasli-name", { detail: voice.name }));
+    }
+  }
 
   function persist(next: Save) {
     setSave(next);
@@ -132,6 +169,46 @@ export function YasliApp() {
     setConfirmLeave(false);
     setScreen("home");
   }
+
+  function goBack() {
+    if (confirmRef.current) {
+      setConfirmLeave(false);
+      return;
+    }
+    const where = screenRef.current;
+    if (where === "play") {
+      setConfirmLeave(true);
+      return;
+    }
+    if (where === "home") {
+      exitApp();
+      return;
+    }
+    setRun(null);
+    setConfirmLeave(false);
+    setScreen("home");
+  }
+
+  actions.current = {
+    openFamily: () => openSetup("family"),
+    openSolo: () => openSetup("solo"),
+    how: () => setScreen("how"),
+    home: leaveHome,
+    back: goBack,
+    length: setLength,
+    name: () => undefined,
+  };
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      const root = document.documentElement;
+      if (root.dataset.form !== "tv") return;
+      const active = document.activeElement;
+      if (active instanceof HTMLElement && active !== document.body) return;
+      document.querySelector<HTMLElement>("button:not(:disabled)")?.focus();
+    }, 40);
+    return () => window.clearTimeout(timer);
+  }, [screen, run?.index, run?.phase, confirmLeave]);
 
   const station = run?.stations[run.index];
   const player = run ? run.players[run.turn] : undefined;
@@ -264,7 +341,7 @@ function Home({
   return (
     <section className="relative min-h-dvh overflow-hidden">
       <img
-        src="/art/bethlehem.jpg"
+        src={media("/art/bethlehem.jpg")}
         alt=""
         className="hero-drift absolute inset-0 h-full w-full object-cover"
       />
@@ -323,6 +400,10 @@ function How({ onBack }: { onBack: () => void }) {
       title: "Две длины",
       text: "Короткий путь — шесть стоянок, от Благовещения до Богоявления. Вечерний — двенадцать: Адвент, Иосиф, гимн «Слава», святой Николай.",
     },
+    {
+      title: "Пульт и голос",
+      text: "На телевизоре стрелки пульта ходят по кнопкам, OK выбирает, «Назад» возвращает. Алиса нажимает кнопку по её словам: «Семейный путь». Имя у поля можно сказать вслух.",
+    },
   ];
   return (
     <ScreenColumn>
@@ -356,6 +437,57 @@ function AuthorCard() {
         {APP_EMAIL}
       </a>
     </section>
+  );
+}
+
+function NameField({
+  playerId,
+  label,
+  value,
+  onValue,
+}: {
+  playerId: string;
+  label: string;
+  value: string;
+  onValue: (name: string) => void;
+}) {
+  const voice = canListen();
+  useEffect(() => {
+    const onName = (event: Event) => {
+      const said = (event as CustomEvent<string>).detail;
+      const active = document.activeElement;
+      const target = active instanceof HTMLInputElement ? active.dataset.player : undefined;
+      if (target && target !== playerId) return;
+      if (!target && playerId) {
+        const first = document.querySelector<HTMLInputElement>("input.field");
+        if (first?.dataset.player !== playerId) return;
+      }
+      onValue(said);
+    };
+    window.addEventListener("yasli-name", onName);
+    return () => window.removeEventListener("yasli-name", onName);
+  }, [onValue, playerId]);
+
+  return (
+    <div className="flex items-center gap-2">
+      <input
+        className="field"
+        data-player={playerId}
+        value={value}
+        maxLength={18}
+        aria-label={label}
+        onChange={(event) => onValue(event.target.value)}
+      />
+      {voice ? (
+        <button
+          className="icon-btn shrink-0"
+          aria-label="Сказать имя"
+          onClick={() => listenForName(onValue)}
+        >
+          <Mic className="size-4" />
+        </button>
+      ) : null}
+    </div>
   );
 }
 
@@ -406,12 +538,11 @@ function Setup({
                   </button>
                 ) : null}
               </div>
-              <input
-                className="field"
+              <NameField
+                playerId={player.id}
+                label={`Имя игрока ${index + 1}`}
                 value={player.name}
-                maxLength={18}
-                aria-label={`Имя игрока ${index + 1}`}
-                onChange={(event) => patch(player.id, { name: event.target.value })}
+                onValue={(name) => patch(player.id, { name })}
               />
               <div className="mt-2 grid grid-cols-2 gap-2">
                 <RoleButton
@@ -465,7 +596,7 @@ function Handoff({
 }) {
   return (
     <section className="relative min-h-dvh overflow-hidden">
-      <img src={station.image} alt="" className="absolute inset-0 h-full w-full object-cover opacity-50" />
+      <img src={media(station.image)} alt="" className="absolute inset-0 h-full w-full object-cover opacity-50" />
       <div className="scrim absolute inset-0" />
       <div className="safe-x safe-b safe-t relative z-10 mx-auto flex min-h-dvh w-full max-w-lg flex-col justify-end gap-4 pb-16">
         <p className="kicker">
@@ -555,7 +686,7 @@ function Play({
           </div>
         ) : null}
         <figure className="overflow-hidden rounded-card">
-          <img src={station.image} alt={station.title} className="h-36 w-full object-cover" />
+          <img src={media(station.image)} alt={station.title} className="h-36 w-full object-cover" />
         </figure>
         <Crib earned={run.earned} />
         <div>
@@ -669,7 +800,7 @@ function Done({ run, onAgain, onHome }: { run: Run; onAgain: () => void; onHome:
   const possible = run.stations.length;
   return (
     <section className="relative min-h-dvh">
-      <img src="/art/finale.jpg" alt="Вертеп: Святое Семейство, пастухи и волхвы" className="absolute inset-0 h-full w-full object-cover" />
+      <img src={media("/art/finale.jpg")} alt="Вертеп: Святое Семейство, пастухи и волхвы" className="absolute inset-0 h-full w-full object-cover" />
       <div className="scrim absolute inset-0" />
       <div className="safe-x safe-b safe-t relative z-10 mx-auto flex min-h-dvh w-full max-w-lg flex-col justify-end gap-4 pb-16">
         <p className="kicker">{run.length === "short" ? "Короткий путь" : "Вечерний путь"}</p>

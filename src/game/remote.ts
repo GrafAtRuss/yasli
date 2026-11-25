@@ -1,0 +1,183 @@
+export type Voice =
+  | { kind: "back" }
+  | { kind: "home" }
+  | { kind: "family" }
+  | { kind: "solo" }
+  | { kind: "how" }
+  | { kind: "short" }
+  | { kind: "evening" }
+  | { kind: "next" }
+  | { kind: "name"; name: string };
+
+type YasliNative = {
+  listen?: () => void;
+  exitApp?: () => void;
+  form?: () => string;
+};
+
+function native(): YasliNative | null {
+  if (typeof window === "undefined") return null;
+  const bridge = (window as unknown as { YasliNative?: YasliNative }).YasliNative;
+  return bridge ?? null;
+}
+
+export function isTv(): boolean {
+  if (typeof navigator === "undefined") return false;
+  if (/YasliTV/i.test(navigator.userAgent)) return true;
+  return native()?.form?.() === "tv";
+}
+
+export function canListen(): boolean {
+  if (typeof window === "undefined") return false;
+  if (typeof native()?.listen === "function") return true;
+  const web = window as unknown as {
+    SpeechRecognition?: unknown;
+    webkitSpeechRecognition?: unknown;
+  };
+  return Boolean(web.SpeechRecognition || web.webkitSpeechRecognition);
+}
+
+export function listenForName(onName: (name: string) => void): void {
+  const bridge = native();
+  if (typeof bridge?.listen === "function") {
+    (window as unknown as { yasliHeard?: (text: string) => void }).yasliHeard = (text: string) => {
+      onName(cleanName(text));
+    };
+    bridge.listen();
+    return;
+  }
+  const web = window as unknown as {
+    SpeechRecognition?: new () => SpeechRec;
+    webkitSpeechRecognition?: new () => SpeechRec;
+  };
+  const Rec = web.SpeechRecognition || web.webkitSpeechRecognition;
+  if (!Rec) return;
+  const rec = new Rec();
+  rec.lang = "ru-RU";
+  rec.interimResults = false;
+  rec.maxAlternatives = 1;
+  rec.onresult = (event) => {
+    const said = event.results[0]?.[0]?.transcript ?? "";
+    onName(cleanName(said));
+  };
+  rec.start();
+}
+
+type SpeechRec = {
+  lang: string;
+  interimResults: boolean;
+  maxAlternatives: number;
+  onresult: ((event: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
+  start: () => void;
+};
+
+export function exitApp(): void {
+  native()?.exitApp?.();
+}
+
+export function cleanName(raw: string): string {
+  return raw.trim().replace(/\s+/g, " ").slice(0, 18);
+}
+
+export function interpretVoice(raw: string): Voice {
+  const text = raw.trim().toLowerCase().replace(/ё/g, "е");
+  if (!text) return { kind: "name", name: "" };
+  if (/(^|\s)(назад|вернись)(\s|$)/.test(text)) return { kind: "back" };
+  if (/на главную|домой|главн/.test(text)) return { kind: "home" };
+  if (/как играть|правил/.test(text)) return { kind: "how" };
+  if (/семейн|с семьей|с семьеи|вместе/.test(text)) return { kind: "family" };
+  if (/одному|в одиночку|(^|\s)соло(\s|$)/.test(text)) return { kind: "solo" };
+  if (/коротк/.test(text)) return { kind: "short" };
+  if (/вечерн/.test(text)) return { kind: "evening" };
+  if (/дальше|следующ|к яслям|я готов|смотрим вместе|пройти ещ/.test(text)) return { kind: "next" };
+  return { kind: "name", name: cleanName(raw) };
+}
+
+type Dir = "left" | "right" | "up" | "down";
+
+function focusables(): HTMLElement[] {
+  return Array.from(document.querySelectorAll<HTMLElement>("button:not(:disabled), input:not(:disabled), a[href]")).filter(
+    (el) => {
+      const box = el.getBoundingClientRect();
+      return box.width > 0 && box.height > 0;
+    },
+  );
+}
+
+function center(el: HTMLElement): { x: number; y: number } {
+  const box = el.getBoundingClientRect();
+  return { x: box.left + box.width / 2, y: box.top + box.height / 2 };
+}
+
+export function moveFocus(dir: Dir): void {
+  const items = focusables();
+  if (items.length === 0) return;
+  const current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  if (!current || !items.includes(current)) {
+    items[0]?.focus();
+    return;
+  }
+  const from = center(current);
+  let best: HTMLElement | null = null;
+  let bestScore = Infinity;
+  for (const item of items) {
+    if (item === current) continue;
+    const to = center(item);
+    const dx = to.x - from.x;
+    const dy = to.y - from.y;
+    const ahead = dir === "left" ? -dx : dir === "right" ? dx : dir === "up" ? -dy : dy;
+    if (ahead < 12) continue;
+    const sideways = dir === "left" || dir === "right" ? Math.abs(dy) : Math.abs(dx);
+    const score = ahead + sideways * 2.4;
+    if (score < bestScore) {
+      bestScore = score;
+      best = item;
+    }
+  }
+  if (!best) return;
+  best.focus();
+  best.scrollIntoView({ block: "nearest", inline: "nearest" });
+}
+
+export function pressLabeled(pattern: RegExp): boolean {
+  const button = focusables().find((el) => el.tagName === "BUTTON" && pattern.test(el.textContent ?? ""));
+  if (!(button instanceof HTMLButtonElement)) return false;
+  button.click();
+  return true;
+}
+
+export function installRemote(onVoice: (voice: Voice) => void, onBack: () => void): () => void {
+  document.documentElement.dataset.form = isTv() ? "tv" : "phone";
+  const win = window as unknown as {
+    yasliVoice?: (text: string) => void;
+    yasliOpen?: (screen: string) => void;
+    yasliBack?: () => void;
+  };
+  win.yasliVoice = (text: string) => onVoice(interpretVoice(text));
+  win.yasliOpen = (screen: string) => {
+    if (screen === "family" || screen === "solo" || screen === "how" || screen === "home" || screen === "short" || screen === "evening") {
+      onVoice({ kind: screen });
+      return;
+    }
+    onVoice(interpretVoice(screen));
+  };
+  win.yasliBack = () => onBack();
+  const onKey = (event: KeyboardEvent) => {
+    if (!isTv()) return;
+    const dir =
+      event.key === "ArrowLeft" ? "left" : event.key === "ArrowRight" ? "right" : event.key === "ArrowUp" ? "up" : event.key === "ArrowDown" ? "down" : null;
+    if (dir) {
+      const active = document.activeElement;
+      if (active instanceof HTMLInputElement && (dir === "left" || dir === "right")) return;
+      event.preventDefault();
+      moveFocus(dir);
+      return;
+    }
+    if (event.key === "Escape" || event.key === "GoBack" || event.key === "BrowserBack") {
+      event.preventDefault();
+      onBack();
+    }
+  };
+  window.addEventListener("keydown", onKey);
+  return () => window.removeEventListener("keydown", onKey);
+}

@@ -1,1 +1,5 @@
 .DS_Store
+android/www/
+android/yasli.keystore
+.android-sdk/
+dist/

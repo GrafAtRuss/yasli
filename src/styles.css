@@ -165,6 +165,21 @@
   }
 }
 
+html[data-form="tv"] {
+  font-size: 18px;
+}
+
+html[data-form="tv"] button:focus,
+html[data-form="tv"] input:focus,
+html[data-form="tv"] a:focus {
+  outline: 3px solid var(--color-gold);
+  outline-offset: 4px;
+}
+
+html[data-form="tv"] .max-w-lg {
+  max-width: 46rem;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .hero-drift {
     animation: drift 32s ease-in-out infinite alternate;

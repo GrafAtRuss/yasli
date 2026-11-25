@@ -1,0 +1,202 @@
+#!/usr/bin/env python3
+"""Подпись v1 с именем CERT.* и схемы v2 и v3. CERT.RSA без флага ZIP, который не читает страница RuStore."""
+import hashlib
+import os
+import struct
+import subprocess
+import sys
+import tempfile
+import zipfile
+from pathlib import Path
+
+KS = os.environ.get("YASLI_KEYSTORE", "/workspace/android/yasli.keystore")
+ALIAS = os.environ.get("YASLI_ALIAS", "yasli")
+STOREPASS = os.environ.get("YASLI_STOREPASS", "Yasli-Rozhdestvo-2026")
+SIG_V2 = 0x7109871A
+SIG_V3 = 0xF05368C0
+ALG = 0x0103
+MIN_SDK = 24
+MAX_SDK = 0x7FFFFFFF
+BT = "/workspace/.android-sdk/build-tools/35.0.0"
+
+
+def u32(n: int) -> bytes:
+    return struct.pack("<I", n)
+
+
+def u64(n: int) -> bytes:
+    return struct.pack("<Q", n)
+
+
+def chunked_sha256(parts: list[bytes]) -> bytes:
+    size = 1024 * 1024
+    digests = []
+    for part in parts:
+        for i in range(0, len(part), size):
+            chunk = part[i : i + size]
+            digests.append(hashlib.sha256(b"\xa5" + u32(len(chunk)) + chunk).digest())
+    return hashlib.sha256(b"\x5a" + u32(len(digests)) + b"".join(digests)).digest()
+
+
+def find_eocd(data: bytes) -> int:
+    pos = data.rfind(b"PK\x05\x06")
+    if pos < 0:
+        raise SystemExit("not a zip")
+    return pos
+
+
+def clear_zip_flags(data: bytearray) -> None:
+    eocd = find_eocd(data)
+    cd_off = struct.unpack_from("<I", data, eocd + 16)[0]
+    cd_count = struct.unpack_from("<H", data, eocd + 10)[0]
+    off = cd_off
+    for _ in range(cd_count):
+        if data[off : off + 4] != b"PK\x01\x02":
+            raise SystemExit("bad central directory")
+        flag = struct.unpack_from("<H", data, off + 8)[0] & ~0x0800
+        struct.pack_into("<H", data, off + 8, flag)
+        struct.pack_into("<H", data, off + 4, 20)
+        struct.pack_into("<I", data, off + 38, 0)
+        local = struct.unpack_from("<I", data, off + 42)[0]
+        nlen = struct.unpack_from("<H", data, off + 28)[0]
+        elen = struct.unpack_from("<H", data, off + 30)[0]
+        clen = struct.unpack_from("<H", data, off + 32)[0]
+        if data[local : local + 4] != b"PK\x03\x04":
+            raise SystemExit("bad local header")
+        lflag = struct.unpack_from("<H", data, local + 6)[0] & ~0x0800
+        struct.pack_into("<H", data, local + 6, lflag)
+        off += 46 + nlen + elen + clen
+
+
+def rewrite_without_descriptors(src: Path, dst: Path) -> None:
+    with zipfile.ZipFile(src) as zin:
+        items = [(info, zin.read(info.filename)) for info in zin.infolist()]
+    rank = {"META-INF/MANIFEST.MF": 0, "META-INF/CERT.SF": 1, "META-INF/CERT.RSA": 2}
+    items.sort(key=lambda it: (rank.get(it[0].filename, 10), it[0].filename))
+    with zipfile.ZipFile(dst, "w") as zout:
+        for info, data in items:
+            out = zipfile.ZipInfo(filename=info.filename, date_time=info.date_time)
+            out.compress_type = zipfile.ZIP_STORED if info.filename.startswith("META-INF/") else info.compress_type
+            out.create_system = 0
+            out.external_attr = 0
+            out.flag_bits = 0
+            zout.writestr(out, data)
+
+
+def export_key_and_cert():
+    from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat, pkcs12
+
+    key, cert, _ = pkcs12.load_key_and_certificates(Path(KS).read_bytes(), STOREPASS.encode())
+    return key, cert.public_bytes(Encoding.DER), key.public_key().public_bytes(
+        Encoding.DER, PublicFormat.SubjectPublicKeyInfo
+    )
+
+
+def sign_content(key, content: bytes) -> bytes:
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.primitives.asymmetric import padding
+
+    return key.sign(content, padding.PKCS1v15(), hashes.SHA256())
+
+
+def _signer_value(digest: bytes, cert_der: bytes, pub_der: bytes, signature: bytes, v3: bool) -> bytes:
+    pairs = u32(40) + u32(ALG) + u32(32) + digest
+    digests = u32(len(pairs)) + pairs
+    certs_inner = u32(len(cert_der)) + cert_der
+    certs = u32(len(certs_inner)) + certs_inner
+    content = digests + certs
+    if v3:
+        content += u32(MIN_SDK) + u32(MAX_SDK)
+    content += u32(0)
+    sig_inner = u32(ALG) + u32(len(signature)) + signature
+    sigs = u32(len(sig_inner)) + sig_inner
+    pub = u32(len(pub_der)) + pub_der
+    signer_body = u32(len(content)) + content
+    if v3:
+        signer_body += u32(MIN_SDK) + u32(MAX_SDK)
+    signer_body += u32(len(sigs)) + sigs + pub
+    signer = u32(len(signer_body)) + signer_body
+    return u32(len(signer)) + signer
+
+
+def insert_schemes(data: bytearray, pairs: list[tuple[int, bytes]]) -> bytearray:
+    eocd = find_eocd(data)
+    cd_off = struct.unpack_from("<I", data, eocd + 16)[0]
+    body = b""
+    for ident, value in pairs:
+        pair_len = 4 + len(value)
+        body += u64(pair_len) + u32(ident) + value
+    size_field = len(body) + 8 + 16
+    block = u64(size_field) + body + u64(size_field) + b"APK Sig Block 42"
+    out = bytearray(data[:cd_off])
+    out += block
+    out += data[cd_off:eocd]
+    new_eocd = bytearray(data[eocd:])
+    struct.pack_into("<I", new_eocd, 16, cd_off + len(block))
+    out += new_eocd
+    return out
+
+
+def jarsign(src: Path, dst: Path) -> None:
+    subprocess.check_call(
+        [
+            BT + "/apksigner",
+            "sign",
+            "--ks",
+            KS,
+            "--ks-key-alias",
+            ALIAS,
+            "--ks-pass",
+            "pass:" + STOREPASS,
+            "--key-pass",
+            "pass:" + STOREPASS,
+            "--v1-signing-enabled",
+            "true",
+            "--v2-signing-enabled",
+            "true",
+            "--v3-signing-enabled",
+            "true",
+            "--v1-signer-name",
+            "CERT",
+            "--out",
+            str(dst),
+            str(src),
+        ]
+    )
+
+
+def main() -> None:
+    src = Path(sys.argv[1])
+    dst = Path(sys.argv[2])
+    with tempfile.TemporaryDirectory() as tmp:
+        signed = Path(tmp) / "v1.apk"
+        rewritten = Path(tmp) / "v1b.apk"
+        aligned = Path(tmp) / "v1a.apk"
+        jarsign(src, signed)
+        rewrite_without_descriptors(signed, rewritten)
+        subprocess.check_call([BT + "/zipalign", "-f", "-p", "4", str(rewritten), str(aligned)])
+        raw = bytearray(aligned.read_bytes())
+    clear_zip_flags(raw)
+    eocd = find_eocd(raw)
+    cd_off = struct.unpack_from("<I", raw, eocd + 16)[0]
+    before = bytes(raw[:cd_off])
+    cd = bytes(raw[cd_off:eocd])
+    eocd_for_digest = bytearray(raw[eocd:])
+    struct.pack_into("<I", eocd_for_digest, 16, cd_off)
+    digest = chunked_sha256([before, cd, bytes(eocd_for_digest)])
+    key, cert_der, pub_der = export_key_and_cert()
+    pairs = u32(40) + u32(ALG) + u32(32) + digest
+    digests = u32(len(pairs)) + pairs
+    certs_inner = u32(len(cert_der)) + cert_der
+    certs = u32(len(certs_inner)) + certs_inner
+    content = digests + certs + u32(0)
+    signature = sign_content(key, content)
+    v2 = _signer_value(digest, cert_der, pub_der, signature, v3=False)
+    v3_content = digests + certs + u32(MIN_SDK) + u32(MAX_SDK) + u32(0)
+    v3 = _signer_value(digest, cert_der, pub_der, sign_content(key, v3_content), v3=True)
+    dst.write_bytes(insert_schemes(raw, [(SIG_V2, v2), (SIG_V3, v3)]))
+    print("wrote", dst, dst.stat().st_size)
+
+
+if __name__ == "__main__":
+    main()
