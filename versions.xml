@@ -4,7 +4,7 @@
   https://raw.githubusercontent.com/GrafAtRuss/yasli/main/versions.xml
 -->
 <catalog>
-  <updated>2026-11-25T20:55:00Z</updated>
+  <updated>2026-11-25T21:02:00Z</updated>
   <agreements>
     <agreement id="terms">
       <name>Пользовательское соглашение</name>
@@ -34,11 +34,11 @@
     </application>
     <application id="merge">
       <name>Ясли · Слияние</name>
-      <version>2.0.5</version>
-      <description>Яркая оболочка: локация в рамке, задание снизу, деревянное поле. Ставится поверх 2.0.4.</description>
+      <version>2.0.6</version>
+      <description>Иконка, квадратное поле без наезда карточки задания. Ставится поверх 2.0.5.</description>
       <icon>https://raw.githubusercontent.com/GrafAtRuss/yasli/main/store/icon-512.png</icon>
-      <download>https://github.com/GrafAtRuss/yasli/releases/download/v2.0.5/Yasli-Merge-2.0.5.apk</download>
-      <file>Yasli-Merge-2.0.5.apk</file>
+      <download>https://github.com/GrafAtRuss/yasli/releases/download/v2.0.6/Yasli-Merge-2.0.6.apk</download>
+      <file>Yasli-Merge-2.0.6.apk</file>
     </application>
   </applications>
 </catalog>
