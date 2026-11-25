@@ -33,11 +33,17 @@
     -webkit-tap-highlight-color: transparent;
   }
 
+  button:focus,
+  a:focus,
+  input:focus {
+    outline: none;
+  }
+
   button:focus-visible,
   a:focus-visible,
   input:focus-visible {
     outline: 2px solid var(--color-gold);
-    outline-offset: 3px;
+    outline-offset: 0;
   }
 }
 
@@ -173,7 +179,7 @@ html[data-form="tv"] button:focus,
 html[data-form="tv"] input:focus,
 html[data-form="tv"] a:focus {
   outline: 3px solid var(--color-gold);
-  outline-offset: 4px;
+  outline-offset: 2px;
 }
 
 html[data-form="tv"] .max-w-lg {

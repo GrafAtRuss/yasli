@@ -346,7 +346,7 @@ function Home({
         className="hero-drift absolute inset-0 h-full w-full object-cover"
       />
       <div className="scrim absolute inset-0" />
-      <div className="safe-x safe-b safe-t relative z-10 mx-auto flex min-h-dvh w-full max-w-lg flex-col justify-end gap-5 pb-16">
+      <div className="safe-x safe-b safe-t relative z-10 mx-auto flex min-h-dvh w-full max-w-lg flex-col justify-end gap-4 pb-6">
         <p className="kicker">Католическое Рождество</p>
         <div>
           <h1 className="font-display text-7xl leading-none font-medium text-ink">Ясли</h1>
@@ -375,8 +375,11 @@ function Home({
         ) : (
           <p className="text-sm text-straw">Короткий путь — до яслей за несколько минут. Вечерний — от Адвента до Богоявления.</p>
         )}
-        <p className="text-xs tabular-nums tracking-widest text-gold">{APP_VERSION}</p>
-        <p className="text-xs text-straw">Автор — {APP_AUTHOR}</p>
+        <p className="text-xs leading-relaxed text-straw">
+          <span className="tabular-nums tracking-widest text-gold">{APP_VERSION}</span>
+          {" · Автор — "}
+          {APP_AUTHOR}
+        </p>
       </div>
     </section>
   );
@@ -658,7 +661,7 @@ function Play({
   const asking = run.phase === "ask";
 
   return (
-    <section className="mx-auto flex h-dvh w-full max-w-lg flex-col overflow-hidden">
+    <section className="relative mx-auto flex h-dvh w-full max-w-lg flex-col overflow-hidden">
       <div className="safe-x safe-t flex items-center justify-between pt-3">
         <button className="icon-btn" aria-label="Прервать путь" onClick={onAskLeave}>
           <ArrowLeft className="size-5" />
@@ -671,22 +674,8 @@ function Play({
         </button>
       </div>
       <div className="safe-x flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto py-3">
-        {confirmLeave ? (
-          <div className="rounded-card bg-night-2 p-4">
-            <p className="font-display text-2xl font-medium">Прервать путь?</p>
-            <p className="mt-1 text-sm text-straw">Звёзды этой игры не сохранятся. Домашний рекорд останется.</p>
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <button className="btn btn-line" onClick={onStay}>
-                Остаться
-              </button>
-              <button className="btn btn-gold" onClick={onLeave}>
-                На главную
-              </button>
-            </div>
-          </div>
-        ) : null}
         <figure className="overflow-hidden rounded-card">
-          <img src={media(station.image)} alt={station.title} className="h-36 w-full object-cover" />
+          <img src={media(station.image)} alt={station.title} className="h-32 w-full object-cover" />
         </figure>
         <Crib earned={run.earned} />
         <div>
@@ -694,33 +683,18 @@ function Play({
           <h1 className="font-display text-4xl leading-none font-medium">{station.title}</h1>
           <p className="mt-2 text-sm leading-relaxed text-straw">{station.story}</p>
         </div>
-        {station.together ? (
-          <h2 className="font-display text-3xl leading-tight font-medium">{station.together.prompt}</h2>
-        ) : quiz ? (
+      </div>
+      <div className="dock safe-x safe-b flex max-h-[62%] flex-col gap-2 overflow-y-auto" aria-live="polite">
+        {quiz ? (
           <div>
             <p className="text-sm text-gold">
               Отвечает {player.name} · {ROLE_LABEL[player.role]}. Можно читать вслух.
             </p>
-            <h2 className="font-display mt-1 text-3xl leading-tight font-medium">{quiz.prompt}</h2>
+            <h2 className="font-display mt-1 text-2xl leading-tight font-medium">{quiz.prompt}</h2>
           </div>
+        ) : station.together ? (
+          <h2 className="font-display text-2xl leading-tight font-medium">{station.together.prompt}</h2>
         ) : null}
-        {!asking && quiz ? (
-          <div className="flex flex-col gap-2">
-            {choices.map((choice) => (
-              <ChoiceButton
-                key={choice.id}
-                choice={choice}
-                state={
-                  choice.id === quiz.answerId ? "right" : choice.id === run.picked ? "wrong" : "idle"
-                }
-                disabled
-                onChoose={() => undefined}
-              />
-            ))}
-          </div>
-        ) : null}
-      </div>
-      <div className="dock safe-x safe-b flex max-h-[58%] flex-col gap-2 overflow-y-auto" aria-live="polite">
         {asking && quiz
           ? choices.map((choice) => (
               <ChoiceButton
@@ -737,6 +711,11 @@ function Play({
             Мы сказали
           </button>
         ) : null}
+        {!asking && quiz ? (
+          <p className="text-sm text-gold">
+            {correct ? "Верно" : "Не то"}: {choices.find((choice) => choice.id === quiz.answerId)?.text}
+          </p>
+        ) : null}
         {!asking && quiz ? <Explain title={correct ? "Верно" : "Запомним"} text={quiz.explain} /> : null}
         {!asking && station.together ? (
           <Explain title="Общая звезда" text={station.together.explain} />
@@ -751,6 +730,22 @@ function Play({
           Звёзд у яслей: {totalStars(run)}
         </p>
       </div>
+      {confirmLeave ? (
+        <div className="absolute inset-0 z-20 flex items-end bg-night/80 p-4">
+          <div className="safe-b w-full rounded-card bg-night-2 p-4">
+            <p className="font-display text-3xl font-medium">Прервать путь?</p>
+            <p className="mt-1 text-sm text-straw">Звёзды этой игры не сохранятся. Домашний рекорд останется.</p>
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <button className="btn btn-line" onClick={onStay}>
+                Остаться
+              </button>
+              <button className="btn btn-gold" onClick={onLeave}>
+                На главную
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }

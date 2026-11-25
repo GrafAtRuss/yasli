@@ -4,7 +4,7 @@
   https://raw.githubusercontent.com/GrafAtRuss/yasli/main/versions.xml
 -->
 <catalog>
-  <updated>2026-11-25T11:30:00Z</updated>
+  <updated>2026-11-25T11:45:00Z</updated>
   <agreements>
     <agreement id="terms">
       <name>Пользовательское соглашение</name>
@@ -18,19 +18,19 @@
   <applications>
     <application id="phone">
       <name>Ясли · Телефон</name>
-      <version>1.1.0</version>
+      <version>1.1.1</version>
       <description>Телефон и планшет. Семейная игра о католическом Рождестве. Для RuStore.</description>
       <icon>https://raw.githubusercontent.com/GrafAtRuss/yasli/main/store/icon-512.png</icon>
-      <download>https://github.com/GrafAtRuss/yasli/releases/download/v1.1.0/Yasli-Phone-1.1.0.apk</download>
-      <file>Yasli-Phone-1.1.0.apk</file>
+      <download>https://github.com/GrafAtRuss/yasli/releases/download/v1.1.1/Yasli-Phone-1.1.1.apk</download>
+      <file>Yasli-Phone-1.1.1.apk</file>
     </application>
     <application id="tv">
       <name>Ясли · Телевизор</name>
-      <version>1.1.0</version>
+      <version>1.1.1</version>
       <description>Android TV, YaOS и YaOS X. Пульт и голос Алисы. Для магазина YaOS и RuStore.</description>
       <icon>https://raw.githubusercontent.com/GrafAtRuss/yasli/main/store/icon-512.png</icon>
-      <download>https://github.com/GrafAtRuss/yasli/releases/download/v1.1.0/Yasli-TV-1.1.0.apk</download>
-      <file>Yasli-TV-1.1.0.apk</file>
+      <download>https://github.com/GrafAtRuss/yasli/releases/download/v1.1.1/Yasli-TV-1.1.1.apk</download>
+      <file>Yasli-TV-1.1.1.apk</file>
     </application>
   </applications>
 </catalog>
