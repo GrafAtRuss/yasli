@@ -18,19 +18,19 @@
   <applications>
     <application id="phone">
       <name>Ясли · Телефон</name>
-      <version>1.1.3</version>
+      <version>1.1.4</version>
       <description>Телефон и планшет. Семейная игра о католическом Рождестве. Для RuStore.</description>
       <icon>https://raw.githubusercontent.com/GrafAtRuss/yasli/main/store/icon-512.png</icon>
-      <download>https://github.com/GrafAtRuss/yasli/releases/download/v1.1.3/Yasli-Phone-1.1.3.apk</download>
-      <file>Yasli-Phone-1.1.3.apk</file>
+      <download>https://github.com/GrafAtRuss/yasli/releases/download/v1.1.4/Yasli-Phone-1.1.4.apk</download>
+      <file>Yasli-Phone-1.1.4.apk</file>
     </application>
     <application id="tv">
       <name>Ясли · Телевизор</name>
-      <version>1.1.3</version>
+      <version>1.1.4</version>
       <description>Android TV, YaOS и YaOS X. Пульт и голос Алисы. Для магазина YaOS и RuStore.</description>
       <icon>https://raw.githubusercontent.com/GrafAtRuss/yasli/main/store/icon-512.png</icon>
-      <download>https://github.com/GrafAtRuss/yasli/releases/download/v1.1.3/Yasli-TV-1.1.3.apk</download>
-      <file>Yasli-TV-1.1.3.apk</file>
+      <download>https://github.com/GrafAtRuss/yasli/releases/download/v1.1.4/Yasli-TV-1.1.4.apk</download>
+      <file>Yasli-TV-1.1.4.apk</file>
     </application>
   </applications>
 </catalog>

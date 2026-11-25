@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, BookOpen, Mic, Plus, Star, Users, Volume2, VolumeX, X } from "lucide-react";
 import { playTone, unlockAudio } from "@/game/audio";
 import {
@@ -269,7 +269,7 @@ export function YasliApp() {
   }
 
   return (
-    <div className="min-h-dvh bg-night text-ink">
+    <div className="h-dvh overflow-hidden bg-night text-ink">
       {screen === "home" ? (
         <Home
           save={save}
@@ -343,22 +343,22 @@ function Home({
 }) {
   const hasScore = save.played > 0;
   return (
-    <section className="relative min-h-dvh overflow-hidden">
+    <section className="home-screen relative h-dvh overflow-hidden">
       <img
         src={media("/art/bethlehem.jpg")}
         alt=""
         className="hero-drift absolute inset-0 h-full w-full object-cover"
       />
       <div className="scrim absolute inset-0" />
-      <div className="safe-x safe-b safe-t relative z-10 mx-auto flex min-h-dvh w-full max-w-lg flex-col justify-end gap-4 pb-6">
-        <p className="kicker">Католическое Рождество</p>
-        <div>
+      <div className="home-panel safe-x safe-b safe-t relative z-10 mx-auto flex h-dvh w-full max-w-lg flex-col justify-end gap-4 pb-6">
+        <p className="home-kicker kicker">Католическое Рождество</p>
+        <div className="home-lead">
           <h1 className="font-display text-7xl leading-none font-medium text-ink">Ясли</h1>
           <p className="mt-3 max-w-sm text-base leading-relaxed text-straw">
             Один телефон на всю семью. Дети и взрослые идут к вертепу одной историей — и разными вопросами.
           </p>
         </div>
-        <div className="flex flex-col gap-3">
+        <div className="home-actions flex flex-col gap-3">
           <button className="btn btn-gold" onClick={onFamily}>
             <Users className="size-5" aria-hidden="true" />
             Семейный путь
@@ -372,14 +372,14 @@ function Home({
           </button>
         </div>
         {hasScore ? (
-          <p className="text-sm text-straw">
+          <p className="home-note text-sm text-straw">
             На этом телефоне: короткий путь {save.bestShort}, вечерний {save.bestEvening}. Игр сыграно:{" "}
             {save.played}.
           </p>
         ) : (
-          <p className="text-sm text-straw">Короткий путь — до яслей за несколько минут. Вечерний — от Адвента до Богоявления.</p>
+          <p className="home-note text-sm text-straw">Короткий путь — до яслей за несколько минут. Вечерний — от Адвента до Богоявления.</p>
         )}
-        <p className="text-xs leading-relaxed text-straw">
+        <p className="home-meta text-xs leading-relaxed text-straw">
           <span className="tabular-nums tracking-widest text-gold">{APP_VERSION}</span>
           {" · Автор — "}
           {APP_AUTHOR}
@@ -413,9 +413,9 @@ function How({ onBack }: { onBack: () => void }) {
     },
   ];
   return (
-    <ScreenColumn>
+    <section className="how-screen safe-x safe-b mx-auto flex h-dvh w-full max-w-lg flex-col gap-3 overflow-hidden py-3">
       <TopBar title="Как играть" onBack={onBack} />
-      <div className="flex flex-col gap-4">
+      <div className="how-steps flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto">
         {steps.map((step, index) => (
           <article key={step.title} className="rounded-card bg-night-2 px-4 py-4">
             <p className="kicker">
@@ -430,7 +430,7 @@ function How({ onBack }: { onBack: () => void }) {
         </p>
         <AuthorCard />
       </div>
-    </ScreenColumn>
+    </section>
   );
 }
 
@@ -478,7 +478,7 @@ function NameField({
   return (
     <div className="flex items-center gap-2">
       <input
-        className="field"
+        className="field min-w-0 flex-1"
         data-player={playerId}
         value={value}
         maxLength={18}
@@ -536,7 +536,7 @@ function Setup({
           <ul className="player-list flex flex-col gap-3">
             {draft.map((player, index) => (
               <li key={player.id} className="player-card rounded-card bg-night-2 p-3">
-                <div className="mb-2 flex items-center justify-between">
+                <div className="player-head mb-2 flex items-center justify-between">
                   <span className="kicker">Игрок {index + 1}</span>
                   {draft.length > 1 ? (
                     <button
@@ -554,7 +554,7 @@ function Setup({
                   value={player.name}
                   onValue={(name) => patch(player.id, { name })}
                 />
-                <div className="mt-2 grid grid-cols-2 gap-2">
+                <div className="role-row mt-2 grid grid-cols-2 gap-2">
                   <RoleButton
                     active={player.role === "child"}
                     label="Ребёнок"
@@ -606,10 +606,10 @@ function Handoff({
   onOpen: () => void;
 }) {
   return (
-    <section className="relative min-h-dvh overflow-hidden">
+    <section className="handoff-screen relative h-dvh overflow-hidden">
       <img src={media(station.image)} alt="" className="absolute inset-0 h-full w-full object-cover opacity-50" />
       <div className="scrim absolute inset-0" />
-      <div className="safe-x safe-b safe-t relative z-10 mx-auto flex min-h-dvh w-full max-w-lg flex-col justify-end gap-4 pb-16">
+      <div className="handoff-panel safe-x safe-b safe-t relative z-10 mx-auto flex h-dvh w-full max-w-lg flex-col justify-end gap-4 pb-8">
         <p className="kicker">
           Стоянка {index + 1} из {total}
         </p>
@@ -808,47 +808,43 @@ function Done({ run, onAgain, onHome }: { run: Run; onAgain: () => void; onHome:
   const score = totalStars(run);
   const possible = run.stations.length;
   return (
-    <section className="relative min-h-dvh">
+    <section className="done-screen relative h-dvh overflow-hidden">
       <img src={media("/art/finale.jpg")} alt="Вертеп: Святое Семейство, пастухи и волхвы" className="absolute inset-0 h-full w-full object-cover" />
       <div className="scrim absolute inset-0" />
-      <div className="safe-x safe-b safe-t relative z-10 mx-auto flex min-h-dvh w-full max-w-lg flex-col justify-end gap-4 pb-16">
-        <p className="kicker">{run.length === "short" ? "Короткий путь" : "Вечерний путь"}</p>
-        <h1 className="font-display text-6xl leading-none font-medium">Ясли собраны</h1>
-        <p className="flex items-center gap-2 text-straw">
-          <Star className="size-4 text-gold" aria-hidden="true" />
-          {score} из {possible}
-          {run.familyStars > 0 ? " · вместе со славой ангелов" : ""}
-        </p>
-        <ul className="flex flex-col gap-1 text-sm">
-          {run.players.map((person) => (
-            <li key={person.id} className="flex justify-between gap-4">
-              <span>
-                {person.name} · {ROLE_LABEL[person.role]}
-              </span>
-              <span className="text-gold">{person.stars}</span>
-            </li>
-          ))}
-        </ul>
+      <div className="done-panel safe-x safe-b safe-t relative z-10 mx-auto flex h-dvh w-full max-w-lg flex-col justify-end gap-3 overflow-y-auto pb-6">
+        <div className="done-lead flex flex-col gap-3">
+          <p className="kicker">{run.length === "short" ? "Короткий путь" : "Вечерний путь"}</p>
+          <h1 className="font-display text-6xl leading-none font-medium">Ясли собраны</h1>
+          <p className="flex items-center gap-2 text-straw">
+            <Star className="size-4 text-gold" aria-hidden="true" />
+            {score} из {possible}
+            {run.familyStars > 0 ? " · вместе со славой ангелов" : ""}
+          </p>
+          <ul className="flex flex-col gap-1 text-sm">
+            {run.players.map((person) => (
+              <li key={person.id} className="flex justify-between gap-4">
+                <span>
+                  {person.name} · {ROLE_LABEL[person.role]}
+                </span>
+                <span className="text-gold">{person.stars}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
         <blockquote className="text-sm leading-relaxed text-straw">
           {GOSPEL}
           <footer className="mt-1 text-gold">Лк 2:10–11</footer>
         </blockquote>
         <p className="font-display text-2xl leading-snug font-medium">{PRAYER}</p>
-        <button className="btn btn-gold" onClick={onAgain}>
-          Пройти ещё раз
-        </button>
-        <button className="btn btn-ghost" onClick={onHome}>
-          На главную
-        </button>
+        <div className="done-actions flex flex-col gap-2">
+          <button className="btn btn-gold" onClick={onAgain}>
+            Пройти ещё раз
+          </button>
+          <button className="btn btn-ghost" onClick={onHome}>
+            На главную
+          </button>
+        </div>
       </div>
-    </section>
-  );
-}
-
-function ScreenColumn({ children }: { children: ReactNode }) {
-  return (
-    <section className="safe-x safe-b mx-auto flex min-h-dvh w-full max-w-lg flex-col gap-4 py-4">
-      {children}
     </section>
   );
 }
