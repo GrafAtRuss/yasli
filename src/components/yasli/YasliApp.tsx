@@ -201,8 +201,12 @@ export function YasliApp() {
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      const root = document.documentElement;
-      if (root.dataset.form !== "tv") return;
+      const modal = document.querySelector("[data-modal]");
+      if (modal) {
+        modal.querySelector<HTMLElement>("button")?.focus();
+        return;
+      }
+      if (document.documentElement.dataset.form !== "tv") return;
       const active = document.activeElement;
       if (active instanceof HTMLElement && active !== document.body) return;
       document.querySelector<HTMLElement>("button:not(:disabled)")?.focus();
@@ -516,19 +520,21 @@ function Setup({
   }
 
   return (
-    <section className="mx-auto flex h-dvh w-full max-w-lg flex-col overflow-hidden">
-      <div className="safe-x flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto py-3">
+    <section className="setup-screen mx-auto flex h-dvh w-full max-w-lg flex-col overflow-hidden">
+      <div className="safe-x safe-t pt-3">
         <TopBar title="Кто идёт" onBack={onBack} />
-        <p className="text-sm leading-relaxed text-straw">
+      </div>
+      <div className="setup-body safe-x flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto py-3">
+        <p className="setup-note text-sm leading-relaxed text-straw">
           Отметьте, кому какой вопрос. Имена появятся, когда нужно передать телефон.
         </p>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="setup-lengths grid grid-cols-2 gap-2">
           <LengthButton active={length === "short"} title="Короткий" note="6 стоянок" onClick={() => onLength("short")} />
           <LengthButton active={length === "evening"} title="Вечерний" note="12 стоянок" onClick={() => onLength("evening")} />
         </div>
-        <ul className="flex flex-col gap-3">
+        <ul className="player-list flex flex-col gap-3">
           {draft.map((player, index) => (
-            <li key={player.id} className="rounded-card bg-night-2 p-3">
+            <li key={player.id} className="player-card rounded-card bg-night-2 p-3">
               <div className="mb-2 flex items-center justify-between">
                 <span className="kicker">Игрок {index + 1}</span>
                 {draft.length > 1 ? (
@@ -562,10 +568,10 @@ function Setup({
             </li>
           ))}
         </ul>
-        {nameError ? <p className="text-sm text-gold">Каждому нужно имя — хотя бы короткое.</p> : null}
+        {nameError ? <p className="setup-error text-sm text-gold">Каждому нужно имя — хотя бы короткое.</p> : null}
         {draft.length < 4 ? (
           <button
-            className="btn btn-line"
+            className="setup-add btn btn-line"
             onClick={() => onChange([...draft, newPlayer(draft.length % 2 === 0 ? "child" : "adult", "")])}
           >
             <Plus className="size-4" aria-hidden="true" />
@@ -661,8 +667,8 @@ function Play({
   const asking = run.phase === "ask";
 
   return (
-    <section className="relative mx-auto flex h-dvh w-full max-w-lg flex-col overflow-hidden">
-      <div className="safe-x safe-t flex items-center justify-between pt-3">
+    <section className="play-screen relative mx-auto flex h-dvh w-full max-w-lg flex-col overflow-hidden">
+      <div className="play-bar safe-x safe-t flex items-center justify-between pt-3" inert={confirmLeave}>
         <button className="icon-btn" aria-label="Прервать путь" onClick={onAskLeave}>
           <ArrowLeft className="size-5" />
         </button>
@@ -673,18 +679,18 @@ function Play({
           {muted ? <VolumeX className="size-5" /> : <Volume2 className="size-5" />}
         </button>
       </div>
-      <div className="safe-x flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto py-3">
-        <figure className="overflow-hidden rounded-card">
-          <img src={media(station.image)} alt={station.title} className="h-32 w-full object-cover" />
+      <div className="play-story safe-x flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto py-3" inert={confirmLeave}>
+        <figure className="play-figure overflow-hidden rounded-card">
+          <img src={media(station.image)} alt={station.title} className="play-photo w-full object-cover" />
         </figure>
         <Crib earned={run.earned} />
-        <div>
+        <div className="story-copy">
           <p className="kicker">{station.kicker}</p>
           <h1 className="font-display text-4xl leading-none font-medium">{station.title}</h1>
           <p className="mt-2 text-sm leading-relaxed text-straw">{station.story}</p>
         </div>
       </div>
-      <div className="dock safe-x safe-b flex max-h-[62%] flex-col gap-2 overflow-y-auto" aria-live="polite">
+      <div className="dock safe-x safe-b flex max-h-[62%] flex-col gap-2 overflow-y-auto" aria-live="polite" inert={confirmLeave}>
         {quiz ? (
           <div>
             <p className="text-sm text-gold">
@@ -731,10 +737,16 @@ function Play({
         </p>
       </div>
       {confirmLeave ? (
-        <div className="absolute inset-0 z-20 flex items-end bg-night/80 p-4">
-          <div className="safe-b w-full rounded-card bg-night-2 p-4">
-            <p className="font-display text-3xl font-medium">Прервать путь?</p>
-            <p className="mt-1 text-sm text-straw">Звёзды этой игры не сохранятся. Домашний рекорд останется.</p>
+        <div
+          className="absolute inset-0 z-30 flex items-center justify-center bg-night/80 p-6"
+          data-modal
+          role="dialog"
+          aria-modal="true"
+          aria-label="Прервать путь"
+        >
+          <div className="w-full max-w-md rounded-card bg-night-2 p-5">
+            <p className="font-display text-center text-3xl font-medium">Прервать путь?</p>
+            <p className="mt-2 text-center text-sm text-straw">Звёзды этой игры не сохранятся. Домашний рекорд останется.</p>
             <div className="mt-4 grid grid-cols-2 gap-2">
               <button className="btn btn-line" onClick={onStay}>
                 Остаться

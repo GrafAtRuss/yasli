@@ -95,18 +95,59 @@ export function interpretVoice(raw: string): Voice {
 
 type Dir = "left" | "right" | "up" | "down";
 
+export type FocusBox = { left: number; top: number; right: number; bottom: number };
+
+function rangesOverlap(a0: number, a1: number, b0: number, b1: number): boolean {
+  return Math.min(a1, b1) - Math.max(a0, b0) > 4;
+}
+
+/** Ближний по ходу стрелки. Сначала тот, кто пересекается с текущим поперёк хода — иначе широкое поле имени пропускается. */
+export function bestFocusIndex(dir: Dir, current: FocusBox, items: FocusBox[]): number {
+  const vertical = dir === "up" || dir === "down";
+  let best = -1;
+  let bestScore = Infinity;
+  for (let index = 0; index < items.length; index += 1) {
+    const item = items[index];
+    if (!item || item === current) continue;
+    const ahead =
+      dir === "down"
+        ? item.top - current.bottom
+        : dir === "up"
+          ? current.top - item.bottom
+          : dir === "right"
+            ? item.left - current.right
+            : current.left - item.right;
+    if (ahead < -4) continue;
+    const overlap = vertical
+      ? rangesOverlap(current.left, current.right, item.left, item.right)
+      : rangesOverlap(current.top, current.bottom, item.top, item.bottom);
+    const sideways = vertical
+      ? Math.abs((item.left + item.right) / 2 - (current.left + current.right) / 2)
+      : Math.abs((item.top + item.bottom) / 2 - (current.top + current.bottom) / 2);
+    const score = (overlap ? 0 : 100000) + Math.max(0, ahead) + sideways * 0.2;
+    if (score < bestScore) {
+      bestScore = score;
+      best = index;
+    }
+  }
+  return best;
+}
+
 function focusables(): HTMLElement[] {
-  return Array.from(document.querySelectorAll<HTMLElement>("button:not(:disabled), input:not(:disabled), a[href]")).filter(
+  const modal = document.querySelector("[data-modal]");
+  const root: ParentNode = modal ?? document;
+  return Array.from(root.querySelectorAll<HTMLElement>("button:not(:disabled), input:not(:disabled), a[href]")).filter(
     (el) => {
+      if (modal && !modal.contains(el)) return false;
       const box = el.getBoundingClientRect();
       return box.width > 0 && box.height > 0;
     },
   );
 }
 
-function center(el: HTMLElement): { x: number; y: number } {
+function boxOf(el: HTMLElement): FocusBox {
   const box = el.getBoundingClientRect();
-  return { x: box.left + box.width / 2, y: box.top + box.height / 2 };
+  return { left: box.left, top: box.top, right: box.right, bottom: box.bottom };
 }
 
 export function moveFocus(dir: Dir): void {
@@ -117,26 +158,11 @@ export function moveFocus(dir: Dir): void {
     items[0]?.focus();
     return;
   }
-  const from = center(current);
-  let best: HTMLElement | null = null;
-  let bestScore = Infinity;
-  for (const item of items) {
-    if (item === current) continue;
-    const to = center(item);
-    const dx = to.x - from.x;
-    const dy = to.y - from.y;
-    const ahead = dir === "left" ? -dx : dir === "right" ? dx : dir === "up" ? -dy : dy;
-    if (ahead < 12) continue;
-    const sideways = dir === "left" || dir === "right" ? Math.abs(dy) : Math.abs(dx);
-    const score = ahead + sideways * 2.4;
-    if (score < bestScore) {
-      bestScore = score;
-      best = item;
-    }
-  }
-  if (!best) return;
-  best.focus();
-  best.scrollIntoView({ block: "nearest", inline: "nearest" });
+  const index = bestFocusIndex(dir, boxOf(current), items.map(boxOf));
+  const next = index >= 0 ? items[index] : document.querySelector("[data-modal]") ? items[(items.indexOf(current) + 1) % items.length] : null;
+  if (!next || next === current) return;
+  next.focus();
+  next.scrollIntoView({ block: "nearest", inline: "nearest" });
 }
 
 export function pressLabeled(pattern: RegExp): boolean {

@@ -1,8 +1,8 @@
 /** Одна версия для телефона, планшета и телевизора. */
-export const APP_VERSION = "1.1.1";
+export const APP_VERSION = "1.1.2";
 
-/** Целое для Android: растёт с каждой сборкой. 1.1.1 → 111. */
-export const APP_VERSION_CODE = 111;
+/** Целое для Android: растёт с каждой сборкой. 1.1.2 → 112. */
+export const APP_VERSION_CODE = 112;
 
 export const APP_NAME = "Ясли";
 

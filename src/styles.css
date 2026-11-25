@@ -172,7 +172,7 @@
 }
 
 html[data-form="tv"] {
-  font-size: 18px;
+  font-size: 16px;
 }
 
 html[data-form="tv"] button:focus,
@@ -183,7 +183,118 @@ html[data-form="tv"] a:focus {
 }
 
 html[data-form="tv"] .max-w-lg {
-  max-width: 46rem;
+  max-width: none;
+}
+
+html[data-form="tv"] .btn,
+html[data-form="tv"] .choice {
+  min-height: 2.55rem;
+  padding: 0.4rem 0.8rem;
+}
+
+html[data-form="tv"] .field {
+  padding: 0.45rem 0.7rem;
+}
+
+html[data-form="tv"] .setup-screen,
+html[data-form="tv"] .play-screen {
+  height: 100dvh;
+  max-width: none;
+}
+
+html[data-form="tv"] .setup-body {
+  display: grid;
+  grid-template-columns: minmax(14rem, 0.72fr) minmax(0, 1.28fr);
+  grid-template-rows: auto auto auto;
+  align-content: center;
+  column-gap: 1.25rem;
+  row-gap: 0.65rem;
+  overflow: hidden;
+}
+
+html[data-form="tv"] .setup-note {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+html[data-form="tv"] .setup-lengths {
+  grid-column: 1;
+  grid-row: 2;
+  align-self: start;
+}
+
+html[data-form="tv"] .player-list {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-content: center;
+  gap: 0.65rem;
+  min-height: 0;
+  overflow: auto;
+}
+
+html[data-form="tv"] .setup-add,
+html[data-form="tv"] .setup-error {
+  grid-column: 1;
+}
+
+html[data-form="tv"] .player-card {
+  padding: 0.65rem;
+}
+
+html[data-form="tv"] .play-screen {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+html[data-form="tv"] .play-bar {
+  grid-column: 1 / -1;
+}
+
+html[data-form="tv"] .play-story {
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+html[data-form="tv"] .play-figure {
+  flex: 1 1 42%;
+  min-height: 8rem;
+  max-height: 46%;
+}
+
+.play-photo {
+  height: 8rem;
+  width: 100%;
+  object-fit: cover;
+}
+
+html[data-form="tv"] .play-photo {
+  height: 100%;
+}
+
+html[data-form="tv"] .story-copy {
+  min-height: 0;
+  overflow: auto;
+}
+
+html[data-form="tv"] .play-screen h1 {
+  font-size: 2.35rem;
+}
+
+html[data-form="tv"] .play-screen h2 {
+  font-size: 1.45rem;
+}
+
+html[data-form="tv"] .play-screen .dock {
+  max-height: none;
+  min-height: 0;
+  justify-content: center;
+  border-top: none;
+  border-left: 1px solid color-mix(in srgb, var(--color-gold) 28%, transparent);
 }
 
 @media (prefers-reduced-motion: no-preference) {
