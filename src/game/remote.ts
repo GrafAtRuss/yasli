@@ -37,6 +37,12 @@ export function canListen(): boolean {
   return Boolean(web.SpeechRecognition || web.webkitSpeechRecognition);
 }
 
+let speechLang = "ru-RU";
+
+export function setSpeechLang(code: string) {
+  speechLang = code;
+}
+
 export function listenForName(onName: (name: string) => void): void {
   const bridge = native();
   if (typeof bridge?.listen === "function") {
@@ -53,7 +59,7 @@ export function listenForName(onName: (name: string) => void): void {
   const Rec = web.SpeechRecognition || web.webkitSpeechRecognition;
   if (!Rec) return;
   const rec = new Rec();
-  rec.lang = "ru-RU";
+  rec.lang = speechLang;
   rec.interimResults = false;
   rec.maxAlternatives = 1;
   rec.onresult = (event) => {
@@ -82,14 +88,14 @@ export function cleanName(raw: string): string {
 export function interpretVoice(raw: string): Voice {
   const text = raw.trim().toLowerCase().replace(/ё/g, "е");
   if (!text) return { kind: "name", name: "" };
-  if (/(^|\s)(назад|вернись)(\s|$)/.test(text)) return { kind: "back" };
-  if (/на главную|домой|главн/.test(text)) return { kind: "home" };
-  if (/как играть|правил/.test(text)) return { kind: "how" };
-  if (/семейн|с семьей|с семьеи|вместе/.test(text)) return { kind: "family" };
-  if (/одному|в одиночку|(^|\s)соло(\s|$)/.test(text)) return { kind: "solo" };
-  if (/коротк/.test(text)) return { kind: "short" };
-  if (/вечерн/.test(text)) return { kind: "evening" };
-  if (/дальше|следующ|к яслям|я готов|смотрим вместе|пройти ещ/.test(text)) return { kind: "next" };
+  if (/(^|\s)(назад|вернись|back|indietro|retour|zurück|zuruck|atrás|atras|voltar|wstecz|назад|вярніся|назад)(\s|$)/.test(text)) return { kind: "back" };
+  if (/на главную|домой|главн|home|inizio|accueil|startseite|inicio|início|inicio|początek|додому|дадому|на галоўную/.test(text)) return { kind: "home" };
+  if (/как играть|правил|how to play|come si gioca|comment jouer|anleitung|cómo jugar|como jogar|jak grać|як грати|як гуляць/.test(text)) return { kind: "how" };
+  if (/семейн|с семьей|с семьеи|вместе|family|famigl|famille|familie|familia|família|rodzin|сім|сем'ї|сямейн/.test(text)) return { kind: "family" };
+  if (/одному|в одиночку|(^|\s)соло(\s|$)|(^|\s)solo(\s|$)|sozinho|(^|\s)allein(\s|$)|(^|\s)seul(\s|$)|samemu|самому|аднаму|одному/.test(text)) return { kind: "solo" };
+  if (/коротк|каротк|(^|\s)short(\s|$)|(^|\s)breve(\s|$)|(^|\s)court(\s|$)|(^|\s)kurz(\s|$)|(^|\s)corto(\s|$)|(^|\s)curto(\s|$)|krótk|krotk/.test(text)) return { kind: "short" };
+  if (/вечерн|evening|sera|soir|abend|tarde|noite|wieczór|вечорн|вячэрн/.test(text)) return { kind: "evening" };
+  if (/дальше|следующ|к яслям|я готов|смотрим вместе|пройти ещ|next|avanti|suivant|weiter|siguiente|próximo|proximo|dalej|далі|далей/.test(text)) return { kind: "next" };
   return { kind: "name", name: cleanName(raw) };
 }
 

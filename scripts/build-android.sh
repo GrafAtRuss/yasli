@@ -52,6 +52,9 @@ rm -rf "$ROOT/android/www/android"
 rm -rf "$ROOT/android/www/art"
 mkdir -p "$ROOT/android/www/art"
 cp "$ROOT/public/art/"*.jpg "$ROOT/android/www/art/"
+rm -rf "$ROOT/android/www/music"
+mkdir -p "$ROOT/android/www/music"
+cp "$ROOT/public/music/"*.mp3 "$ROOT/android/www/music/"
 
 build_one() {
   FORM="$1"
@@ -109,17 +112,7 @@ PY
   else
     NAME="Yasli-TV-$VER.apk"
   fi
-  "$BT/apksigner" sign \
-    --ks "$ROOT/android/yasli.keystore" \
-    --ks-key-alias yasli \
-    --ks-pass pass:Yasli-Rozhdestvo-2026 \
-    --key-pass pass:Yasli-Rozhdestvo-2026 \
-    --v1-signing-enabled true \
-    --v2-signing-enabled true \
-    --v3-signing-enabled true \
-    --v1-signer-name CERT \
-    --out "$OUT/$NAME" \
-    "$WORK/aligned.apk"
+  python3 "$ROOT/scripts/sign-apk-compat.py" "$WORK/aligned.apk" "$OUT/$NAME"
   "$BT/apksigner" verify --verbose --min-sdk-version 24 "$OUT/$NAME" | head -14
   "$BT/aapt" dump badging "$OUT/$NAME" | head -8
   echo "permissions:"

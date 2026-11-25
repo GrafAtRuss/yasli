@@ -1,3 +1,5 @@
+import type { StationPack } from "@/game/i18n/types";
+
 export type Role = "child" | "adult";
 export type Length = "short" | "evening";
 
@@ -402,6 +404,33 @@ export const STATIONS: Station[] = [
     },
   },
 ];
+
+export function withPack(station: Station, text: StationPack | undefined): Station {
+  if (!text) return station;
+  const child = station.child && text.child ? fillQuiz(station.child, text.child) : station.child;
+  const adult = station.adult && text.adult ? fillQuiz(station.adult, text.adult) : station.adult;
+  return {
+    ...station,
+    title: text.title,
+    kicker: text.kicker,
+    story: text.story,
+    together: station.together && text.together ? text.together : station.together,
+    child,
+    adult,
+  };
+}
+
+function fillQuiz(quiz: Quiz, text: NonNullable<StationPack["child"]>): Quiz {
+  return {
+    prompt: text.prompt,
+    explain: text.explain,
+    answerId: quiz.answerId,
+    choices: quiz.choices.map((choice) => ({
+      id: choice.id,
+      text: text[choice.id as "a" | "b" | "c" | "d"] || choice.text,
+    })),
+  };
+}
 
 export function stationsFor(length: Length): Station[] {
   return STATIONS.filter((station) => length === "evening" || station.short);
