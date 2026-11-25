@@ -4,7 +4,7 @@
   https://raw.githubusercontent.com/GrafAtRuss/yasli/main/versions.xml
 -->
 <catalog>
-  <updated>2026-11-25T20:25:00Z</updated>
+  <updated>2026-11-25T20:38:00Z</updated>
   <agreements>
     <agreement id="terms">
       <name>Пользовательское соглашение</name>
@@ -34,11 +34,11 @@
     </application>
     <application id="merge">
       <name>Ясли · Слияние</name>
-      <version>2.0.2</version>
-      <description>Телефон. История с метками за звёзды и поле слияния. Музыка и эффекты CC0. Ставится поверх 2.0.1.</description>
+      <version>2.0.3</version>
+      <description>Локация на весь экран, задание снизу, поле слияния поверх. Ставится поверх 2.0.2.</description>
       <icon>https://raw.githubusercontent.com/GrafAtRuss/yasli/main/store/icon-512.png</icon>
-      <download>https://github.com/GrafAtRuss/yasli/releases/download/v2.0.2/Yasli-Merge-2.0.2.apk</download>
-      <file>Yasli-Merge-2.0.2.apk</file>
+      <download>https://github.com/GrafAtRuss/yasli/releases/download/v2.0.3/Yasli-Merge-2.0.3.apk</download>
+      <file>Yasli-Merge-2.0.3.apk</file>
     </application>
   </applications>
 </catalog>
