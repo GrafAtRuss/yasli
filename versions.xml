@@ -4,7 +4,7 @@
   https://raw.githubusercontent.com/GrafAtRuss/yasli/main/versions.xml
 -->
 <catalog>
-  <updated>2026-11-25T20:10:00Z</updated>
+  <updated>2026-11-25T20:14:00Z</updated>
   <agreements>
     <agreement id="terms">
       <name>Пользовательское соглашение</name>
@@ -34,11 +34,11 @@
     </application>
     <application id="merge">
       <name>Ясли · Слияние</name>
-      <version>2.0</version>
-      <description>Телефон. История с метками, поле слияния и Санта. Отдельная установка, не обновление 1.1.7.</description>
+      <version>2.0.1</version>
+      <description>Телефон. История с метками, поле слияния и Санта. Исправлен запуск. Отдельная установка, не обновление 1.1.7.</description>
       <icon>https://raw.githubusercontent.com/GrafAtRuss/yasli/main/store/icon-512.png</icon>
-      <download>https://github.com/GrafAtRuss/yasli/releases/download/v2.0.0/Yasli-Merge-2.0.apk</download>
-      <file>Yasli-Merge-2.0.apk</file>
+      <download>https://github.com/GrafAtRuss/yasli/releases/download/v2.0.1/Yasli-Merge-2.0.1.apk</download>
+      <file>Yasli-Merge-2.0.1.apk</file>
     </application>
   </applications>
 </catalog>
